@@ -111,15 +111,13 @@ public:
 
 protected:
 	int predatorsCount = 0,						//	кол-во хищников на поле
-		victimsCount = 0;					//	кол-во жертв на поле
+		victimsCount = 0;						//	кол-во жертв на поле
 private:
 
 	//	data
 	int sizeX, sizeY;						//	размеры поля
-
-	//std::map<int, World::Entity*>
 	std::map<int, std::unique_ptr<World::Entity>>
-		gEntitys,						//	указатели на всех сущностей мира (хищников/жертв)
-		gInterim;						//	промежуточная 'карта' сущностей (пока выполняется очередной ход)
-	E_ENTITY gCycle = ENTITY_VICTIMS;				//	показывает кто в данный момент делает шаг
+		gEntitys,							//	указатели на всех сущностей мира (хищников/жертв)
+		gInterim;							//	промежуточная 'карта' сущностей (пока выполняется очередной ход)
+	E_ENTITY gCycle = ENTITY_VICTIMS;		//	показывает кто в данный момент делает шаг
 };
