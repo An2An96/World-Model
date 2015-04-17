@@ -1,31 +1,73 @@
 #include "world.h"
 
-World::Victim::Victim(int birtch_ac, int birtch_c, int poisoning_c) :
-	Entity(birtch_ac, birtch_c)
+World::Victim::Victim(World* world, int x, int y, int birtch_ac, int birtch_c, int poisoning_c) :
+	Entity(world, x, y, birtch_ac, birtch_c)
 {
 	ChancePoisoning = poisoning_c;
+
+	gWorld->victimsCount++;
 }
 
-World::Victim::Victim() :
-	Entity()
+World::Victim::Victim(World* world, int x, int y) :
+	Entity(world, x, y)
 {
 	ChancePoisoning = random(0, 60);
+
+	gWorld->victimsCount++;
 }
 
 World::Victim::~Victim()
 {
+	gWorld->victimsCount--;
 }
 
-E_STEP World::Victim::Step(bool eat = false)
+int World::Victim::Step(bool eat = false)
 {
-	if (++ActionForBirth >= BirthActionCount)	{
-		if (random(0, 100) <= ChanceBirth)	{
-			//	рождаем новую жертву 
-			ActionForBirth = 0;
-			return STEP_BIRTH;
-		}
+	int bufX, bufY, rand;
+	std::vector<int> pos;
+	//	подбираем позицию для хода
+	if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+		do
+		{
+			rand = random(0, pos.size() - 1);
+			gWorld->Size(pos[rand], bufX, bufY);
+
+			//	Если в клетке никого нет
+			if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+			
+				this->pos[0] = bufX; this->pos[1] = bufY;
+
+				if (++ActionForBirth >= BirthActionCount)	{
+					if (random(0, 100) <= ChanceBirth)	{
+						//	рождаем новую жертву 
+						ActionForBirth = 0;
+
+						pos.clear();
+						if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+							do
+							{
+								rand = random(0, pos.size() - 1);
+								gWorld->Size(pos[rand], bufX, bufY);
+
+								if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+									gWorld->CreateEntity(ENTITY_VICTIMS, bufX, bufY);
+									break;
+								}
+								else {
+									pos.erase(pos.begin() + rand);
+								}
+							} while (pos.size());
+						}
+					}
+				}
+				break;
+			}
+			else	{
+				pos.erase(pos.begin() + rand);
+			}
+		} while (pos.size());
 	}
-	return STEP_NONE;
+	return gWorld->Cell(this->pos[0], this->pos[1]);
 }
 
 int World::Victim::GetPoisoning()	{
