@@ -1,24 +1,15 @@
 #pragma once
 
+#include <memory>
 #include <map>
 #include <vector>
 #include "useful.h"
 #include <fstream>
 
-#define Cell(x,y)	(y * sizeX + x)
-
 enum E_ENTITY	{
 	ENTITY_NONE,
 	ENTITY_VICTIMS,
 	ENTITY_PREDATORS,
-};
-
-enum E_STEP		{
-	STEP_NONE,
-	STEP_SKIP,
-	STEP_BIRTH,
-	STEP_DEATH,
-	STEP_EAT,
 };
 
 class World
@@ -31,11 +22,11 @@ public:
 
 	public:
 
-		Entity();
-		Entity(int, int);
+		Entity(World*, int, int);
+		Entity(World*, int, int, int, int);
 		virtual ~Entity();
 
-		virtual E_STEP Step(bool = false) = 0;
+		virtual int Step(bool = false) = 0;
 		virtual void View() = 0;
 		virtual void PrintData(std::ofstream& out) = 0;
 		virtual void ReadData(std::ifstream& in) = 0;
@@ -43,7 +34,10 @@ public:
 	protected:
 
 		//	data
+		World* gWorld = 0;			//	ссылка на мир
 		int ActionForBirth = 0;		//	кол-во совершенных действий для рождения
+
+		int pos[2];					//	позиция
 
 		//	features
 		int BirthActionCount = 0;	//	кол-во требуемых действий для рождения
@@ -57,14 +51,14 @@ public:
 
 	public:
 
-		Predator();
-		Predator(int, int, int, int);
+		Predator(World*, int, int);
+		Predator(World*, int, int, int, int, int, int);
 		~Predator();
 
-		virtual E_STEP Step(bool);
+		virtual int Step(bool);
 		virtual void View();
-		virtual void PrintData(std::ofstream& out);
-		virtual void ReadData(std::ifstream& in);
+		virtual void PrintData(std::ofstream&);
+		virtual void ReadData(std::ifstream&);
 
 	private:
 
@@ -81,15 +75,15 @@ public:
 
 	public:
 
-		Victim();
-		Victim(int birtch_ac, int birtch_c, int poisoning_c);
+		Victim(World*, int, int);
+		Victim(World*, int, int, int, int, int);
 
 		~Victim();
 
-		virtual E_STEP Step(bool);
+		virtual int Step(bool);
 		virtual void View();
-		virtual void PrintData(std::ofstream& out);
-		virtual void ReadData(std::ifstream& in);
+		virtual void PrintData(std::ofstream&);
+		virtual void ReadData(std::ifstream&);
 
 		int GetPoisoning();
 
@@ -108,6 +102,8 @@ public:
 
 	bool PerformStep();
 	bool Calculate(int, int, std::vector<int>&);
+	int Cell(int, int);
+	void Size(int, int&, int&);
 
 	E_ENTITY InCell(int, int);
 	E_ENTITY InInterim(int, int);
@@ -115,14 +111,15 @@ public:
 
 protected:
 	int predatorsCount = 0,						//	кол-во хищников на поле
-		victimsCount = 0;						//	кол-во жертв на поле
+		victimsCount = 0;					//	кол-во жертв на поле
 private:
 
 	//	data
 	int sizeX, sizeY;						//	размеры поля
 
-	std::map<int, World::Entity*> 
-		gEntitys,							//	указатели на всех сущностей мира (хищников/жертв)
-		gInterim;							//	промежуточная 'карта' сущностей (пока выполняется очередной ход)
-	E_ENTITY gCycle = ENTITY_PREDATORS;		//	показывает кто в данный момент делает шаг
+	//std::map<int, World::Entity*>
+	std::map<int, std::unique_ptr<World::Entity>>
+		gEntitys,						//	указатели на всех сущностей мира (хищников/жертв)
+		gInterim;						//	промежуточная 'карта' сущностей (пока выполняется очередной ход)
+	E_ENTITY gCycle = ENTITY_VICTIMS;				//	показывает кто в данный момент делает шаг
 };
