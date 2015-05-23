@@ -34,46 +34,64 @@ bool World::CreateEntity(E_ENTITY type, int x, int y)
 	return false;
 }
 
-bool World::PerformStep()
+E_STEP World::PerformStep()
 {
-	//	@Step Victims
-	if (gCycle == ENTITY_VICTIMS)	{
+    //	@Step Victims
+    if (gCycle == ENTITY_VICTIMS)	{
 
-		for (auto i = gEntitys.begin(); i != gEntitys.end(); i = gEntitys.begin())
-		{
-			if (dynamic_cast<Victim*>(i->second.get()))	{
-				int cell = i->second->Step();
-				gInterim[cell] = std::move(gEntitys[i->first]);
-			}
-			else if (dynamic_cast<Predator*>(i->second.get()))	{
-				gInterim[i->first] = std::move(gEntitys[i->first]);
-			}
-			gEntitys.erase(i);
-		}
-		gCycle = ENTITY_PREDATORS;
-	}
+        for (auto i = gEntitys.begin(); i != gEntitys.end(); i = gEntitys.begin())
+        {
+            if (dynamic_cast<Victim*>(i->second.get()))	{
+                int cell = i->second->Step();
+                gInterim[cell] = std::move(gEntitys[i->first]);
+                gEntitys.erase(i);
+                gInterim[cell].get()->Birth();
+                continue;
+            }
+            else if (dynamic_cast<Predator*>(i->second.get()))	{
+                gInterim[i->first] = std::move(gEntitys[i->first]);
+            }
+            gEntitys.erase(i);
+        }
+        gCycle = ENTITY_PREDATORS;
+    }
 
 //	@Step Predators
-	else if (gCycle == ENTITY_PREDATORS)	{
+    else if (gCycle == ENTITY_PREDATORS)	{
 
-		for (auto i = gEntitys.begin(); i != gEntitys.end(); i = gEntitys.begin())
-		{
-			if (dynamic_cast<Predator*>(i->second.get()))	{
-				int cell = i->second->Step();
-				if (cell != (-1))	{
-					gInterim[cell] = std::move(gEntitys[i->first]);
-				}
-			}
-			else if (dynamic_cast<Victim*>(i->second.get()))	{
-				gInterim[i->first] = std::move(gEntitys[i->first]);
-			}
-			gEntitys.erase(i);
-		}
-		gCycle = ENTITY_VICTIMS; 
-	}
-	gInterim.swap(gEntitys);
-	gInterim.clear();
-	return (predatorsCount || victimsCount) ? true : false;
+        for (auto i = gEntitys.begin(); i != gEntitys.end(); i = gEntitys.begin())
+        {
+            if (dynamic_cast<Predator*>(i->second.get()))	{
+                int cell = i->second->Step();
+                if (cell != (-1))	{
+                    gInterim[cell] = std::move(gEntitys[i->first]);
+                    gEntitys.erase(i);
+                    gInterim[cell].get()->Birth();
+                    continue;
+                }
+            }
+            else if (dynamic_cast<Victim*>(i->second.get()))	{
+                gInterim[i->first] = std::move(gEntitys[i->first]);
+            }
+            gEntitys.erase(i);
+        }
+        gCycle = ENTITY_VICTIMS;
+    }
+    gInterim.swap(gEntitys);
+    gInterim.clear();
+
+    if(predatorsCount == 0 && victimsCount == (sizeX * sizeY))
+    {
+        return STEP_VICTIMS_WIN;
+    }
+    else if(predatorsCount == 0 && victimsCount == 0)
+    {
+        return STEP_ALL_DEATH;
+    }
+    else
+    {
+        return STEP_LIVE;
+    }
 }
 
 bool World::Calculate(int curx, int cury, std::vector<int>& pos)
