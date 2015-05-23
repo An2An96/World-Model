@@ -12,6 +12,12 @@ enum E_ENTITY	{
 	ENTITY_PREDATORS,
 };
 
+enum E_STEP {
+    STEP_LIVE,
+    STEP_VICTIMS_WIN,
+    STEP_ALL_DEATH
+};
+
 class World
 {
 public:
@@ -26,7 +32,8 @@ public:
 		Entity(World*, int, int, int, int);
 		virtual ~Entity();
 
-		virtual int Step(bool = false) = 0;
+        virtual int Step() = 0;
+        virtual void Birth() = 0;
 		virtual void View() = 0;
 		virtual void PrintData(std::ofstream& out) = 0;
 		virtual void ReadData(std::ifstream& in) = 0;
@@ -55,7 +62,8 @@ public:
 		Predator(World*, int, int, int, int, int, int);
 		~Predator();
 
-		virtual int Step(bool);
+        virtual int Step();
+        virtual void Birth();
 		virtual void View();
 		virtual void PrintData(std::ofstream&);
 		virtual void ReadData(std::ifstream&);
@@ -80,7 +88,8 @@ public:
 
 		~Victim();
 
-		virtual int Step(bool);
+        virtual int Step();
+        virtual void Birth();
 		virtual void View();
 		virtual void PrintData(std::ofstream&);
 		virtual void ReadData(std::ifstream&);
@@ -100,7 +109,7 @@ public:
 	void GenerateEntitys();
 	bool CreateEntity(E_ENTITY type, int x, int y);
 
-	bool PerformStep();
+    E_STEP PerformStep();
 	bool Calculate(int, int, std::vector<int>&);
 	int Cell(int, int);
 	void Size(int, int&, int&);
