@@ -23,89 +23,116 @@ World::Predator::~Predator()
 	gWorld->predatorsCount--;
 }
 
-int World::Predator::Step(bool eat = false)
+int World::Predator::Step()
 {
-	int bufX, bufY, rand;
-	bool chPos = false;
-	std::vector<int> pos;
-	if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
-		for (int s = pos.size() - 1; s >= 0; s--)	{
-			rand = random(0, pos.size() - 1);
-			gWorld->Size(pos[rand], bufX, bufY);
+    int bufX, bufY, rand;
+    bool chPos = false;
+    std::vector<int> pos;
+    if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+        for (int s = (int)pos.size() - 1; s >= 0; s--)	{
+            rand = random(0, (int)pos.size() - 1);
+            gWorld->Size(pos[rand], bufX, bufY);
 
-			if (gWorld->InCell(bufX, bufY) == ENTITY_VICTIMS || gWorld->InInterim(bufX, bufY) == ENTITY_VICTIMS)	{
-				
-				if (random(0, 100) <= ChanceEatVictim)	{
+            if (gWorld->InCell(bufX, bufY) == ENTITY_VICTIMS || gWorld->InInterim(bufX, bufY) == ENTITY_VICTIMS)	{
 
-					chPos = true;
+                if (random(0, 100) <= ChanceEatVictim)	{
 
-					this->pos[0] = bufX; this->pos[1] = bufY;
+                    chPos = true;
 
-					StepWithoutFood = 0;
-					ActionForBirth++;
+                    this->pos[0] = bufX; this->pos[1] = bufY;
 
-					Victim* v;
-					if ((v = dynamic_cast<Victim*>(gWorld->gEntitys[gWorld->Cell(bufX, bufY)].get())) == NULL)	{
-						v = dynamic_cast<Victim*>(gWorld->gInterim[gWorld->Cell(bufX, bufY)].get());
-					}
+                    StepWithoutFood = 0;
+                    ActionForBirth++;
 
-					gWorld->gInterim.erase(gWorld->Cell(bufX, bufY));	gWorld->gEntitys.erase(gWorld->Cell(bufX, bufY));
+                    Victim* v;
+                    if ((v = dynamic_cast<Victim*>(gWorld->gEntitys[gWorld->Cell(bufX, bufY)].get())) == NULL)	{
+                        v = dynamic_cast<Victim*>(gWorld->gInterim[gWorld->Cell(bufX, bufY)].get());
+                    }
 
-					//	Проверка на отравление
-					if (random(0, 100) <= v->GetPoisoning())	{
+                    gWorld->gInterim.erase(gWorld->Cell(bufX, bufY));	gWorld->gEntitys.erase(gWorld->Cell(bufX, bufY));
 
-						return -1;
-					}
-					break;
-				}
-			}
-		}
-		if (chPos == false)	{
-			do
-			{
-				rand = random(0, pos.size() - 1);
-				gWorld->Size(pos[rand], bufX, bufY);
+                    //	Проверка на отравление
+                    if (random(0, 100) <= v->GetPoisoning())	{
 
-				//	Если в клетке никого нет
-				if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+                        return -1;
+                    }
+                    break;
+                }
+            }
+        }
+        if (chPos == false)	{
+            do
+            {
+                rand = random(0, (int)pos.size() - 1);
+                gWorld->Size(pos[rand], bufX, bufY);
 
-					this->pos[0] = bufX; this->pos[1] = bufY;
+                //	Если в клетке никого нет
+                if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
 
-					if (++StepWithoutFood >= StepToDeath)	{
-						//	убиваем хищника
-						return -1;
-					}
-					break;
-				}
-				else	{
-					pos.erase(pos.begin() + rand);
-				}
-			} while (pos.size());
-		}
-		if (ActionForBirth >= BirthActionCount && random(0, 100) <= ChanceBirth)	{
-			//	рождаем новую жертву
-			ActionForBirth = 0;
+                    this->pos[0] = bufX; this->pos[1] = bufY;
 
-			//	вычесляем позицию и рождаем на ней новое существо
-			pos.clear();
-			if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
-				do
-				{
-					rand = random(0, pos.size() - 1);
-					gWorld->Size(pos[rand], bufX, bufY);
+                    if (++StepWithoutFood >= StepToDeath)	{
+                        //	убиваем хищника
+                        return -1;
+                    }
+                    break;
+                }
+                else	{
+                    pos.erase(pos.begin() + rand);
+                }
+            } while (pos.size());
+        }
+        /*if (ActionForBirth >= BirthActionCount && random(0, 100) <= ChanceBirth)	{
+            //	рождаем новую жертву
+            ActionForBirth = 0;
 
-					if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
-						gWorld->CreateEntity(ENTITY_PREDATORS, bufX, bufY);
-						break;
-					}
-					else {
-						pos.erase(pos.begin() + rand);
-					}
-				} while (pos.size());
-			}
-		}
-	}
-	return gWorld->Cell(this->pos[0], this->pos[1]);
+            //	вычесляем позицию и рождаем на ней новое существо
+            pos.clear();
+            if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+                do
+                {
+                    rand = random(0, pos.size() - 1);
+                    gWorld->Size(pos[rand], bufX, bufY);
+
+                    if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+                        gWorld->CreateEntity(ENTITY_PREDATORS, bufX, bufY);
+                        break;
+                    }
+                    else {
+                        pos.erase(pos.begin() + rand);
+                    }
+                } while (pos.size());
+            }
+        }*/
+    }
+    return gWorld->Cell(this->pos[0], this->pos[1]);
+}
+
+void World::Predator::Birth()
+{
+    if (ActionForBirth >= BirthActionCount && random(0, 100) <= ChanceBirth)	{
+        int bufX, bufY, rand;
+        std::vector<int> pos;
+        //	рождаем новую жертву
+        ActionForBirth = 0;
+
+        pos.clear();
+        if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+            do
+            {
+                rand = random(0,(int) pos.size() - 1);
+                gWorld->Size(pos[rand], bufX, bufY);
+
+                if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+                    gWorld->CreateEntity(ENTITY_PREDATORS, bufX, bufY);
+                    break;
+                }
+                else {
+                    pos.erase(pos.begin() + rand);
+                }
+            } while (pos.size());
+        }
+    }
 }
 
 void World::Predator::View()
