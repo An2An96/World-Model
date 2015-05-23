@@ -21,53 +21,80 @@ World::Victim::~Victim()
 	gWorld->victimsCount--;
 }
 
-int World::Victim::Step(bool eat = false)
+int World::Victim::Step()
 {
-	int bufX, bufY, rand;
-	std::vector<int> pos;
-	//	подбираем позицию для хода
-	if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
-		do
-		{
-			rand = random(0, pos.size() - 1);
-			gWorld->Size(pos[rand], bufX, bufY);
+    int bufX, bufY, rand;
+    std::vector<int> pos;
+    //	подбираем позицию для хода
+    if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+        do
+        {
+            rand = random(0, (int)pos.size() - 1);
+            gWorld->Size(pos[rand], bufX, bufY);
 
-			//	Если в клетке никого нет
-			if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
-			
-				this->pos[0] = bufX; this->pos[1] = bufY;
+            //	Если в клетке никого нет
+            if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
 
-				if (++ActionForBirth >= BirthActionCount)	{
-					if (random(0, 100) <= ChanceBirth)	{
-						//	рождаем новую жертву 
-						ActionForBirth = 0;
+                this->pos[0] = bufX; this->pos[1] = bufY;
 
-						pos.clear();
-						if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
-							do
-							{
-								rand = random(0, pos.size() - 1);
-								gWorld->Size(pos[rand], bufX, bufY);
+                ActionForBirth++;
+                /*if (++ActionForBirth >= BirthActionCount && random(0, 100) <= ChanceBirth)	{
+                    //	рождаем новую жертву
+                    ActionForBirth = 0;
 
-								if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
-									gWorld->CreateEntity(ENTITY_VICTIMS, bufX, bufY);
-									break;
-								}
-								else {
-									pos.erase(pos.begin() + rand);
-								}
-							} while (pos.size());
-						}
-					}
-				}
-				break;
-			}
-			else	{
-				pos.erase(pos.begin() + rand);
-			}
-		} while (pos.size());
-	}
-	return gWorld->Cell(this->pos[0], this->pos[1]);
+                    pos.clear();
+                    if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+                        do
+                        {
+                            rand = random(0, pos.size() - 1);
+                            gWorld->Size(pos[rand], bufX, bufY);
+
+                            if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+                                gWorld->CreateEntity(ENTITY_VICTIMS, bufX, bufY);
+                                break;
+                            }
+                            else {
+                                pos.erase(pos.begin() + rand);
+                            }
+                        } while (pos.size());
+                    }
+                }  */
+                break;
+            }
+            else	{
+                pos.erase(pos.begin() + rand);
+            }
+        } while (pos.size());
+    }
+    return gWorld->Cell(this->pos[0], this->pos[1]);
+}
+
+void World::Victim::Birth()
+{
+    if (ActionForBirth >= BirthActionCount && random(0, 100) <= ChanceBirth)	{
+        int bufX, bufY, rand;
+        std::vector<int> pos;
+
+        //	рождаем новую жертву
+        ActionForBirth = 0;
+
+        pos.clear();
+        if (gWorld->Calculate(this->pos[0], this->pos[1], pos))	{
+            do
+            {
+                rand = random(0, (int)pos.size() - 1);
+                gWorld->Size(pos[rand], bufX, bufY);
+
+                if (gWorld->InCell(bufX, bufY) == ENTITY_NONE && gWorld->InInterim(bufX, bufY) == ENTITY_NONE)	{
+                    gWorld->CreateEntity(ENTITY_VICTIMS, bufX, bufY);
+                    break;
+                }
+                else {
+                    pos.erase(pos.begin() + rand);
+                }
+            } while (pos.size());
+        }
+    }
 }
 
 int World::Victim::GetPoisoning()	{
