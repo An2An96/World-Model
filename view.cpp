@@ -1,11 +1,6 @@
 #include "view.h"
 #include "world.h"
 
-//struct Settings
-//{
-//    int SizeX, SizeY, PredPerCent;
-//};
-
 Sector::Sector(QWidget* parent, int size, QColor color) : QWidget(parent)
 {
     QSize s;
@@ -98,14 +93,6 @@ Console::Console(QWidget *parent) : QWidget(parent)
     vl->addWidget(label);
     setLayout(vl);
 }
-
-//NewWorldDialog::Box::Box(QHBoxLayout* parent) : QHBoxLayout(parent)
-//{
-//    label = new QLabel;
-//    box = new QSpinBox;
-//    Layout.addWidget(label);
-//    Layout.addWidget(box);
-//}
 
 void NewWorldDialog::PredSync(int)
 {
@@ -201,8 +188,6 @@ Window::Window() : QWidget(0)
     fd_save = new QFileDialog(this, "Saving");
     fd_save->setFileMode(QFileDialog::AnyFile);
     connect(fd_save, SIGNAL(fileSelected(const QString&)), this, SLOT(Save(const QString&)));
-    //field = new Field(this, 20, 20);
-    //field->move(150, 10);
 
     setMinimumSize(640, 480);
 }
