@@ -18,6 +18,11 @@ enum E_STEP {
     STEP_ALL_DEATH
 };
 
+struct WorldSize
+{
+    int SizeX, SizeY;
+};
+
 class World
 {
 public:
@@ -102,11 +107,11 @@ public:
 	};
 
 //	@World
-	World(int x, int y);
+    World(int x, int y, int PredPerCent, int VictPerCent);
 	World(const char* filename);			// Загрузка
 
 	bool SaveWorld(const char* filename);	// Сохранение
-	void GenerateEntitys();
+    void GenerateEntitys(int PredPerCent, int VictPerCent);
 	bool CreateEntity(E_ENTITY type, int x, int y);
 
     E_STEP PerformStep();
@@ -117,6 +122,7 @@ public:
 	E_ENTITY InCell(int, int);
 	E_ENTITY InInterim(int, int);
 	void View();
+    WorldSize GetWorldSize();
 
 protected:
 	int predatorsCount = 0,						//	кол-во хищников на поле
