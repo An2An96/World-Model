@@ -1,21 +1,27 @@
 #include "world.h"
 
-World::World(int x, int y)
+World::World(int x, int y, int PredPerCent, int VictPerCent)
 {
 	sizeX = x, sizeY = y;
-	GenerateEntitys();
+    GenerateEntitys(PredPerCent, VictPerCent);
 }
 
-void World::GenerateEntitys()
+void World::GenerateEntitys(int PredPerCent, int VictPerCent)
 {
-	//	Заполняем поле рандомно существами от 10% до 30% от всего размера
-	int min = (int)((sizeX * sizeY) * 0.1), max = (int)((sizeX * sizeY) * 0.3);
-	int count = random(min, max);
-	while (count)
-	{
-		//	50 на 50 генерируем жертв и хищников
-		if(CreateEntity(random(0, 1) ? ENTITY_PREDATORS : ENTITY_VICTIMS, random(0, sizeX), random(0, sizeY)))	count--;
+    //	Заполняем поле рандомно существами <PredCount> % и <VictCount> % от всего размера
+    int PredCount = (int)((sizeX * sizeY) * ((double)PredPerCent / 100)),
+        VictCount = (int)((sizeX * sizeY) * ((double)VictPerCent / 100));
+
+    while (PredCount)
+    {
+        if(CreateEntity(ENTITY_PREDATORS, random(0, sizeX), random(0, sizeY)))
+            PredCount--;
 	}
+    while (VictCount)
+    {
+        if(CreateEntity(ENTITY_VICTIMS, random(0, sizeX), random(0, sizeY)))
+            VictCount--;
+    }
 }
 
 bool World::CreateEntity(E_ENTITY type, int x, int y)
@@ -161,4 +167,12 @@ void World::View()
 	for (int x = 0; x < sizeX + 2; x++)	std::cout << "_";
 
 	std::cout << std::endl << "Predators: " << predatorsCount << ", Victims: " << victimsCount << std::endl;
+}
+
+WorldSize World::GetWorldSize()
+{
+    WorldSize ws;
+    ws.SizeX = sizeX;
+    ws.SizeY = sizeY;
+    return ws;
 }
