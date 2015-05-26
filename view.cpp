@@ -188,7 +188,6 @@ Window::Window() : QWidget(0)
     fd_save = new QFileDialog(this, "Saving");
     fd_save->setFileMode(QFileDialog::AnyFile);
     connect(fd_save, SIGNAL(fileSelected(const QString&)), this, SLOT(Save(const QString&)));
-
     setMinimumSize(640, 480);
 }
 
@@ -291,8 +290,8 @@ void Window::Load(const QString& filename)
     world = std::make_unique<World>(filename.toStdString().c_str());
     if (field)
         field->close();
-    WorldSize ws = world->GetWorldSize();
-    field = new Field(this, ws.SizeX, ws.SizeY);
+    Coord ws = world->GetWorldSize();
+    field = new Field(this, ws.x, ws.y);
     field->move(150, 10);
     field->show();
     UpdateField();
