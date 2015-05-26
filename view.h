@@ -1,5 +1,5 @@
-#ifndef VIEW
-#define VIEW
+#ifndef H_VIEW
+#define H_VIEW
 
 #include <QApplication>
 #include <QWidget>
@@ -18,6 +18,9 @@
 #include <QSlider>
 
 #include <memory>
+
+#define MaxSizeX 50
+#define MaxSizeY 50
 
 class World;
 
@@ -119,5 +122,5 @@ signals:
 
 };
 
-#endif // VIEW
+#endif // H_VIEW
 
